@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const Navbar = () => {
     return (
-        <nav className="flex justify-between items-center p-5 h-[80px]  rounded-sm bg-slate-200">
+        <nav className="flex justify-between items-center p-5 h-[80px] rounded-sm ">
             <h1 className="font-semibold text-xl">NyamNyamGo!</h1>
             <Link to="/login" >
                 <button className="p-2 w-20  rounded-2xl bg-slate-700 text-white">
