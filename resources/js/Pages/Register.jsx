@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { IoIosClose } from "react-icons/io";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -82,7 +83,7 @@ const Register = () => {
                             onClick={handleback}
                             className="text-slate-900 text-xl cursor-pointer"
                         >
-                            {/* <IoIosClose /> */}✕
+                            <IoIosClose />
                         </div>
                     </div>
                     <p className="text-gray-500">Please enter your details</p>

@@ -8,7 +8,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/register', [AuthController::class, 'register']);;
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('auth', [AuthController::class, 'auth']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
