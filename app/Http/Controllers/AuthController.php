@@ -35,13 +35,15 @@ class AuthController extends Controller
         $request->validate([
             "name" => "required",
             "email" => "required|email|unique:users,email",
-            "password" => "required|confirmed"
+            "password" => "required"
         ]);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->password,
+            'password' => Hash::make($request->password),
+            'role_id' => 1
+            
         ]);
 
         return response([
