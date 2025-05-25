@@ -61,6 +61,11 @@ const Navbar = () => {
                     </button>
                     {showDropdown && (
                         <div className="absolute right-0 mt-2 w-40 bg-white shadow-md rounded-md p-2">
+                        <Link  
+                        to={"/add-menu"}
+                        >
+                        add menu
+                        </Link>
                             <button
                                 onClick={handleLogout}
                                 className="w-full text-left px-4 py-2 hover:bg-gray-100"

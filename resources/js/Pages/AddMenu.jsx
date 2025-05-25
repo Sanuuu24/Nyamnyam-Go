@@ -1,90 +1,273 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { IoIosClose } from "react-icons/io";
 
 const AddMenu = () => {
+    const [formData, setFormData] = useState({
+        products_name: '',
+        description: '',
+        price: '',
+        stock: '',
+        product_type_id: '',
+        img_url: null
+    });
+    
+    const [productTypes, setProductTypes] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
+    const [imagePreview, setImagePreview] = useState(null);
+
+    // Mock product types - replace with actual API call
+    useEffect(() => {
+    fetch('/api/product-type')
+        .then(res => res.json())
+        .then(data => setProductTypes(data.data))
+        .catch(err => console.error(err));
+}, []);
+
+    const handleInputChange = (e) => {
+        const { name, value, type, files } = e.target;
+        
+        if (type === 'file') {
+            const file = files[0];
+            setFormData(prev => ({
+                ...prev,
+                [name]: file
+            }));
+            
+            // Create image preview
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImagePreview(reader.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                setImagePreview(null);
+            }
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('products_name', formData.products_name);
+            formDataToSend.append('description', formData.description);
+            formDataToSend.append('price', formData.price);
+            formDataToSend.append('stock', formData.stock);
+            formDataToSend.append('product_type_id', formData.product_type_id);
+            if (formData.img_url) {
+                formDataToSend.append('img_url', formData.img_url);
+            }
+
+            // Replace with your actual API endpoint
+            const response = await fetch('/api/product', {
+                method: 'POST',
+                body: formDataToSend,
+                headers: {
+                    'Accept': 'application/json',
+                    // Don't set Content-Type for FormData, let browser set it
+                }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                setMessage({ type: 'success', text: result.message || 'Product created successfully!' });
+                // Reset form
+                setFormData({
+                    products_name: '',
+                    description: '',
+                    price: '',
+                    stock: '',
+                    product_type_id: '',
+                    img_url: null
+                });
+                setImagePreview(null);
+            } else {
+                setMessage({ type: 'error', text: result.message || 'Failed to create product' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Network error occurred' });
+            console.error('Error:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleBack = () => {
+        window.history.back();
+    };
+
     return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="flex flex-col justify-center items-center border-2 w-auto rounded-2xl gap-5 p-5">
-                <div className="flex flex-col p-5 w-full">
-                    <div className="flex justify-between">
-                        <h1 className="text-2xl font-bold">Add Menu</h1>
-                        <div className="text-xl">
+        <div className="flex justify-center items-center min-h-screen p-4">
+            <div className="flex flex-col justify-center items-center border-2 border-gray-200 w-full max-w-4xl rounded-2xl gap-5 p-6 bg-white shadow-lg">
+                <div className="flex flex-col w-full">
+                    <div className="flex justify-between items-center mb-4">
+                        <h1 className="text-2xl font-bold text-gray-800">Add Menu</h1>
+                        <button 
+                            onClick={handleBack}
+                            className="text-2xl text-gray-500 hover:text-gray-700 transition-colors"
+                        >
                             <IoIosClose />
-                        </div>
+                        </button>
                     </div>
-                    <p>your add item menu</p>
-                    <form className="flex flex-col gap-5 my-5">
-                        <div className="flex gap-5">
+                    <p className="text-gray-600 mb-6">Add a new item to your menu</p>
+                    
+                    {message.text && (
+                        <div className={`p-4 rounded-md mb-4 ${
+                            message.type === 'success' 
+                                ? 'bg-green-50 text-green-700 border border-green-200' 
+                                : 'bg-red-50 text-red-700 border border-red-200'
+                        }`}>
+                            {message.text}
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-6">
+                        <div className="flex flex-col lg:flex-row gap-6">
+                            {/* Image Upload Section */}
+                            <div className="flex flex-col gap-2 lg:w-1/3">
+                                <label htmlFor="img_url" className="font-semibold text-gray-700">
+                                    Product Image *
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        name="img_url"
+                                        id="img_url"
+                                        accept="image/*"
+                                        onChange={handleInputChange}
+                                        className="border-2 border-gray-200 p-2 rounded-md focus:outline-none focus:border-blue-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 w-full"
+                                        required
+                                    />
+                                </div>
+                                {imagePreview && (
+                                    <div className="mt-2">
+                                        <img 
+                                            src={imagePreview} 
+                                            alt="Preview" 
+                                            className="w-full h-48 object-cover rounded-md border-2 border-gray-200"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Form Fields Section */}
+                            <div className="flex flex-col gap-4 lg:w-2/3">
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="products_name" className="font-semibold text-gray-700">
+                                        Product Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="products_name"
+                                        id="products_name"
+                                        placeholder="Enter product name"
+                                        value={formData.products_name}
+                                        onChange={handleInputChange}
+                                        className="border-2 border-gray-200 p-3 rounded-md focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <div className="flex flex-col gap-2 flex-1">
+                                        <label htmlFor="price" className="font-semibold text-gray-700">
+                                            Price *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="price"
+                                            id="price"
+                                            placeholder="0.00"
+                                            value={formData.price}
+                                            onChange={handleInputChange}
+                                            min="0"
+                                            step="0.01"
+                                            className="border-2 border-gray-200 p-3 rounded-md focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2 flex-1">
+                                        <label htmlFor="stock" className="font-semibold text-gray-700">
+                                            Stock *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="stock"
+                                            id="stock"
+                                            placeholder="0"
+                                            value={formData.stock}
+                                            onChange={handleInputChange}
+                                            min="0"
+                                            className="border-2 border-gray-200 p-3 rounded-md focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="description" className="font-semibold text-gray-700">
+                                        Description *
+                                    </label>
+                                    <textarea
+                                        name="description"
+                                        id="description"
+                                        placeholder="Enter product description"
+                                        value={formData.description}
+                                        onChange={handleInputChange}
+                                        rows="4"
+                                        className="border-2 border-gray-200 p-3 rounded-md focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200 resize-vertical"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
                         <div className="flex flex-col gap-2">
-                            <label htmlFor="image" className="font-semibold">
-                                Image
+                            <label htmlFor="product_type_id" className="font-semibold text-gray-700">
+                                Category *
                             </label>
-                            <input
-                                type="file"
-                                className="border-2 border-gray-200 p-2 rounded-md focus:outline-none focus:border-gray-400 file:h-64 file:w-full file:rounded-lg file:border-0  text-transparent"
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="title"
-                                    className="font-semibold"
-                                >
-                                    Name
-                                </label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    id="name"
-                                    placeholder="Name"
-                                    className="border-2 border-gray-200 p-2 rounded-md focus:outline-none focus:border-gray-400"
-                                    required
-                                />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="price"
-                                    className="font-semibold"
-                                >
-                                    Price
-                                </label>
-                                <input
-                                    type="number"
-                                    name="price"
-                                    id="price"
-                                    placeholder="Price"
-                                    className="border-2 border-gray-200 p-2 rounded-md focus:outline-none focus:border-gray-400"
-                                    required
-                                />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <label
-                                    htmlFor="description"
-                                    className="font-semibold"
-                                >
-                                    Description
-                                </label>
-                                <textarea
-                                    name="description"
-                                    id="description"
-                                    placeholder="Description"
-                                    className="border-2 border-gray-200 p-2 h-[125px] rounded-md focus:outline-none focus:border-gray-400"
-                                    required
-                                />
-                            </div>
-                        </div>
+                            <select 
+                                name="product_type_id"
+                                id="product_type_id"
+                                value={formData.product_type_id}
+                                onChange={handleInputChange}
+                                className="border-2 border-gray-200 p-3 rounded-md focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
+                                required
+                            >
+                                <option value="">Select a category</option>
+                                {productTypes.map(type => (
+                                    <option key={type.id} value={type.id}>
+                                        {type.type_name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         
                         <button
                             type="submit"
-                            className="bg-slate-900 text-white p-2 rounded-md mt-6 w-full active:scale-95 duration-150"
-                            // disabled={loading}
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className={`text-white p-3 rounded-md mt-4 w-full font-semibold transition-all duration-150 ${
+                                loading 
+                                    ? 'bg-gray-400 cursor-not-allowed' 
+                                    : 'bg-slate-900 hover:bg-slate-800 active:scale-95'
+                            }`}
                         >
-                            {/* {loading ? "Loading..." : "Login"} */} login
+                            {loading ? 'Creating Product...' : 'Create Product'}
                         </button>
-                        
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
