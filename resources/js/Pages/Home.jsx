@@ -21,7 +21,6 @@ import {
 const Home = () => {
     const dispatch = useDispatch();
     
-    // Redux selectors
     const productTypes = useSelector(selectProductTypes);
     const selectedType = useSelector(selectSelectedType);
     const loading = useSelector(selectProductLoading);

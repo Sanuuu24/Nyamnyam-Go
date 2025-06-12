@@ -1,38 +1,48 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { IoIosClose } from "react-icons/io";
+import {
+    fetchProductTypes,
+    selectProductTypes,
+    selectProductLoading,
+    selectProductError,
+} from "../redux/slices/productSlice";
 
 const AddMenu = () => {
+    const dispatch = useDispatch();
+    const productTypes = useSelector(selectProductTypes);
+    const isLoading = useSelector(selectProductLoading);
+    const error = useSelector(selectProductError);
+
     const [formData, setFormData] = useState({
-        products_name: '',
-        description: '',
-        price: '',
-        stock: '',
-        product_type_id: '',
-        img_url: null
+        products_name: "",
+        description: "",
+        price: "",
+        stock: "",
+        product_type_id: "",
+        img_url: null,
     });
-    
-    const [productTypes, setProductTypes] = useState([]);
+
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState({ type: '', text: '' });
+    const [message, setMessage] = useState({ type: "", text: "" });
     const [imagePreview, setImagePreview] = useState(null);
 
     useEffect(() => {
-    fetch('/api/product-type')
-        .then(res => res.json())
-        .then(data => setProductTypes(data.data))
-        .catch(err => console.error(err));
-}, []);
+        if (productTypes.length === 0) {
+            dispatch(fetchProductTypes());
+        }
+    }, [dispatch, productTypes.length]);
 
     const handleInputChange = (e) => {
         const { name, value, type, files } = e.target;
-        
-        if (type === 'file') {
+
+        if (type === "file") {
             const file = files[0];
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
-                [name]: file
+                [name]: file,
             }));
-            
+
             if (file) {
                 const reader = new FileReader();
                 reader.onloadend = () => {
@@ -43,9 +53,9 @@ const AddMenu = () => {
                 setImagePreview(null);
             }
         } else {
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
-                [name]: value
+                [name]: value,
             }));
         }
     };
@@ -53,47 +63,52 @@ const AddMenu = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage({ type: '', text: '' });
+        setMessage({ type: "", text: "" });
 
         try {
             const formDataToSend = new FormData();
-            formDataToSend.append('products_name', formData.products_name);
-            formDataToSend.append('description', formData.description);
-            formDataToSend.append('price', formData.price);
-            formDataToSend.append('stock', formData.stock);
-            formDataToSend.append('product_type_id', formData.product_type_id);
+            formDataToSend.append("products_name", formData.products_name);
+            formDataToSend.append("description", formData.description);
+            formDataToSend.append("price", formData.price);
+            formDataToSend.append("stock", formData.stock);
+            formDataToSend.append("product_type_id", formData.product_type_id);
             if (formData.img_url) {
-                formDataToSend.append('img_url', formData.img_url);
+                formDataToSend.append("img_url", formData.img_url);
             }
 
-            const response = await fetch('/api/product', {
-                method: 'POST',
+            const response = await fetch("/api/product", {
+                method: "POST",
                 body: formDataToSend,
                 headers: {
-                    'Accept': 'application/json',
-                }
+                    Accept: "application/json",
+                },
             });
 
             const result = await response.json();
 
             if (response.ok) {
-                setMessage({ type: 'success', text: result.message || 'Product created successfully!' });
-                // Reset form
+                setMessage({
+                    type: "success",
+                    text: result.message || "Product created successfully!",
+                });
                 setFormData({
-                    products_name: '',
-                    description: '',
-                    price: '',
-                    stock: '',
-                    product_type_id: '',
-                    img_url: null
+                    products_name: "",
+                    description: "",
+                    price: "",
+                    stock: "",
+                    product_type_id: "",
+                    img_url: null,
                 });
                 setImagePreview(null);
             } else {
-                setMessage({ type: 'error', text: result.message || 'Failed to create product' });
+                setMessage({
+                    type: "error",
+                    text: result.message || "Failed to create product",
+                });
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Network error occurred' });
-            console.error('Error:', error);
+            setMessage({ type: "error", text: "Network error occurred" });
+            console.error("Error:", error);
         } finally {
             setLoading(false);
         }
@@ -108,32 +123,46 @@ const AddMenu = () => {
             <div className="flex flex-col justify-center items-center border-2 border-gray-200 w-full max-w-4xl rounded-2xl gap-5 p-6 bg-white shadow-lg">
                 <div className="flex flex-col w-full">
                     <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-bold text-gray-800">Add Menu</h1>
-                        <button 
+                        <h1 className="text-2xl font-bold text-gray-800">
+                            Add Menu
+                        </h1>
+                        <button
                             onClick={handleBack}
                             className="text-2xl text-gray-500 hover:text-gray-700 transition-colors"
                         >
                             <IoIosClose />
                         </button>
                     </div>
-                    <p className="text-gray-600 mb-6">Add a new item to your menu</p>
-                    
+                    <p className="text-gray-600 mb-6">
+                        Add a new item to your menu
+                    </p>
+
                     {message.text && (
-                        <div className={`p-4 rounded-md mb-4 ${
-                            message.type === 'success' 
-                                ? 'bg-green-50 text-green-700 border border-green-200' 
-                                : 'bg-red-50 text-red-700 border border-red-200'
-                        }`}>
+                        <div
+                            className={`p-4 rounded-md mb-4 ${
+                                message.type === "success"
+                                    ? "bg-green-50 text-green-700 border border-green-200"
+                                    : "bg-red-50 text-red-700 border border-red-200"
+                            }`}
+                        >
                             {message.text}
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="p-4 rounded-md mb-4 bg-red-50 text-red-700 border border-red-200">
+                            Error loading categories: {error}
                         </div>
                     )}
 
                     <div className="flex flex-col gap-6">
                         <div className="flex flex-col lg:flex-row gap-6">
-                            {/* Image Upload Section */}
                             <div className="flex flex-col gap-2 lg:w-1/3">
-                                <label htmlFor="img_url" className="font-semibold text-gray-700">
-                                    Product Image 
+                                <label
+                                    htmlFor="img_url"
+                                    className="font-semibold text-gray-700"
+                                >
+                                    Product Image
                                 </label>
                                 <div className="relative">
                                     <input
@@ -148,20 +177,22 @@ const AddMenu = () => {
                                 </div>
                                 {imagePreview && (
                                     <div className="mt-2">
-                                        <img 
-                                            src={imagePreview} 
-                                            alt="Preview" 
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
                                             className="w-full h-48 object-cover rounded-md border-2 border-gray-200"
                                         />
                                     </div>
                                 )}
                             </div>
 
-                            {/* Form Fields Section */}
                             <div className="flex flex-col gap-4 lg:w-2/3">
                                 <div className="flex flex-col gap-2">
-                                    <label htmlFor="products_name" className="font-semibold text-gray-700">
-                                        Product Name 
+                                    <label
+                                        htmlFor="products_name"
+                                        className="font-semibold text-gray-700"
+                                    >
+                                        Product Name
                                     </label>
                                     <input
                                         type="text"
@@ -177,8 +208,11 @@ const AddMenu = () => {
 
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     <div className="flex flex-col gap-2 flex-1">
-                                        <label htmlFor="price" className="font-semibold text-gray-700">
-                                            Price 
+                                        <label
+                                            htmlFor="price"
+                                            className="font-semibold text-gray-700"
+                                        >
+                                            Price
                                         </label>
                                         <input
                                             type="number"
@@ -195,8 +229,11 @@ const AddMenu = () => {
                                     </div>
 
                                     <div className="flex flex-col gap-2 flex-1">
-                                        <label htmlFor="stock" className="font-semibold text-gray-700">
-                                            Stock 
+                                        <label
+                                            htmlFor="stock"
+                                            className="font-semibold text-gray-700"
+                                        >
+                                            Stock
                                         </label>
                                         <input
                                             type="number"
@@ -213,8 +250,11 @@ const AddMenu = () => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label htmlFor="description" className="font-semibold text-gray-700">
-                                        Description 
+                                    <label
+                                        htmlFor="description"
+                                        className="font-semibold text-gray-700"
+                                    >
+                                        Description
                                     </label>
                                     <textarea
                                         name="description"
@@ -231,37 +271,45 @@ const AddMenu = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label htmlFor="product_type_id" className="font-semibold text-gray-700">
-                                Category 
+                            <label
+                                htmlFor="product_type_id"
+                                className="font-semibold text-gray-700"
+                            >
+                                Category
                             </label>
-                            <select 
+                            <select
                                 name="product_type_id"
                                 id="product_type_id"
                                 value={formData.product_type_id}
                                 onChange={handleInputChange}
                                 className="border-2 border-gray-200 p-3 rounded-md focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200 bg-white"
                                 required
+                                disabled={isLoading}
                             >
-                                <option value="">Select a category</option>
-                                {productTypes.map(type => (
+                                <option value="">
+                                    {isLoading
+                                        ? "Loading categories..."
+                                        : "Select a category"}
+                                </option>
+                                {productTypes.map((type) => (
                                     <option key={type.id} value={type.id}>
                                         {type.type_name}
                                     </option>
                                 ))}
                             </select>
                         </div>
-                        
+
                         <button
                             type="submit"
                             onClick={handleSubmit}
-                            disabled={loading}
+                            disabled={loading || isLoading}
                             className={`text-white p-3 rounded-md mt-4 w-full font-semibold transition-all duration-150 ${
-                                loading 
-                                    ? 'bg-gray-400 cursor-not-allowed' 
-                                    : 'bg-slate-900 hover:bg-slate-800 active:scale-95'
+                                loading || isLoading
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-slate-900 hover:bg-slate-800 active:scale-95"
                             }`}
                         >
-                            {loading ? 'Creating Product...' : 'Create Product'}
+                            {loading ? "Creating Product..." : "Create Product"}
                         </button>
                     </div>
                 </div>
