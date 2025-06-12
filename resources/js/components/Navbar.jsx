@@ -49,13 +49,13 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="flex justify-between items-center p-5 h-[80px] rounded-sm ">
-            <h1 className="font-semibold text-xl">NyamNyamGo!</h1>
+        <nav className="flex justify-between items-center w-full p-5 h-[80px] fixed top-0 rounded-sm z-10 opacity-90 bg-[#08AD1A] ">
+            <h1 className="font-semibold text-xl text-white">NyamNyamGo!</h1>
             {isLoggedIn ? (
                 <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={toggleDropdown}
-                        className="p-2 rounded-2xl border-2 border-slate-700"
+                        className="p-2 rounded-2xl  bg-cyan-900 text-white"
                     >
                         {userData?.name || "User"}
                     </button>

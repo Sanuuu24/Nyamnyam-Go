@@ -1,43 +1,111 @@
-import Navbar from "../components/Navbar";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import React from "react";
-import Menu from "../components/Menu"
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from 'react-redux';
 import ItemMenu from "../components/ItemMenu";
-import ProductType from "../components/ProductType";
+import Menu from "../components/Menu";
+import Navbar from "../components/Navbar";
+import {
+    fetchProducts,
+    fetchProductTypes,
+    setSelectedType,
+    selectProductTypes,
+    selectSelectedType,
+    selectProductLoading
+} from '../redux/slices/productSlice';
+import {
+    selectCartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity
+} from '../redux/slices/cartSlice';
 
 const Home = () => {
+    const dispatch = useDispatch();
+    
+    // Redux selectors
+    const productTypes = useSelector(selectProductTypes);
+    const selectedType = useSelector(selectSelectedType);
+    const loading = useSelector(selectProductLoading);
+    const cartItems = useSelector(selectCartItems);
+
+    useEffect(() => {
+        dispatch(fetchProducts());
+        dispatch(fetchProductTypes());
+    }, [dispatch]);
+
+    const handleTypeFilter = (typeId) => {
+        dispatch(setSelectedType(typeId));
+        console.log("selected type", typeId);
+    };
+
+    const handleAddToCart = (product) => {
+        dispatch(addToCart(product));
+    };
+
+    const handleRemoveFromCart = (productId) => {
+        dispatch(removeFromCart(productId));
+    };
+
+    const handleUpdateQuantity = (productId, newQuantity) => {
+        dispatch(updateQuantity({ productId, quantity: newQuantity }));
+    };
+
+    if (loading) {
+        return (
+            <>
+                <Navbar />
+                <div className="flex mt-[80px] p-5">
+                    <div className="flex justify-center items-center w-full h-64">
+                        <p>Loading...</p>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
             <Navbar />
-            <main className="flex h-full bg-gray-300">
-                <div className="flex flex-col gap-5 p-7">
-                    {/*category */}
-                    <div className="flex flex-col h-[19rem] w-[60rem] rounded-xl bg-white">
-                        <header className="flex justify-between items-center p-4 ">
-                            <h1 className="font-semibold text-xl">
-                                Foods Menu
-                            </h1>
-                            <div className="flex gap-2 text-gray-700 text-sm">
-                                <FaArrowLeft />
-                                <FaArrowRight />
-                            </div>
-                        </header>
-                        <div className="overflow-x-auto overflow-y-hidden ">
-                            <div className="flex space-x-5 w-max p-5 ">
-                                {/* di bagian ini buat effek saat img di clik menu type nya muncul okey! */}
-                                <ProductType/>
-                            </div>
+            <div className="flex justify-evenly mt-[80px] p-5 gap">
+                {/*main menu*/}
+                <div className="flex justify-between">
+                    <div className="flex flex-col w-[65rem] p-5 gap-5 rounded-xl bg-slate-100">
+                        <div className="flex justify-start gap-5">
+                            <button
+                                onClick={() => handleTypeFilter("all")}
+                                className={`p-2 text-lg rounded-xl transition-colors ${
+                                    selectedType === "all"
+                                        ? "bg-slate-500 text-white"
+                                        : "bg-slate-300 hover:bg-slate-400"
+                                }`}
+                            >
+                                All Menu
+                            </button>
+                            {productTypes.map((type) => (
+                                <button
+                                    key={type.id}
+                                    onClick={() =>
+                                        handleTypeFilter(type.id)
+                                    }
+                                    className={`p-2 text-lg rounded-xl transition-colors ${
+                                        selectedType === type.id
+                                            ? "bg-slate-500 text-white"
+                                            : "bg-slate-300 hover:bg-slate-400"
+                                    }`}
+                                >
+                                    {type.type_name}
+                                </button>
+                            ))}
                         </div>
+                        <Menu onAddToCart={handleAddToCart} />
                     </div>
-
-                    <Menu />
-
                 </div>
-                <div className="flex flex-col my-7 h-[47rem] w-[30rem] p-5 gap-5 rounded-xl bg-white ">
-                    <h1 className="text-2xl font-semibold">items</h1>
-                    <ItemMenu/>
-                </div>
-            </main>
+                {/*sidebar*/}
+                <ItemMenu
+                    cartItems={cartItems}
+                    onRemoveFromCart={handleRemoveFromCart}
+                    onUpdateQuantity={handleUpdateQuantity}
+                />
+            </div>
         </>
     );
 };

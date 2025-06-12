@@ -16,7 +16,6 @@ const AddMenu = () => {
     const [message, setMessage] = useState({ type: '', text: '' });
     const [imagePreview, setImagePreview] = useState(null);
 
-    // Mock product types - replace with actual API call
     useEffect(() => {
     fetch('/api/product-type')
         .then(res => res.json())
@@ -34,7 +33,6 @@ const AddMenu = () => {
                 [name]: file
             }));
             
-            // Create image preview
             if (file) {
                 const reader = new FileReader();
                 reader.onloadend = () => {
@@ -68,13 +66,11 @@ const AddMenu = () => {
                 formDataToSend.append('img_url', formData.img_url);
             }
 
-            // Replace with your actual API endpoint
             const response = await fetch('/api/product', {
                 method: 'POST',
                 body: formDataToSend,
                 headers: {
                     'Accept': 'application/json',
-                    // Don't set Content-Type for FormData, let browser set it
                 }
             });
 
@@ -137,7 +133,7 @@ const AddMenu = () => {
                             {/* Image Upload Section */}
                             <div className="flex flex-col gap-2 lg:w-1/3">
                                 <label htmlFor="img_url" className="font-semibold text-gray-700">
-                                    Product Image *
+                                    Product Image 
                                 </label>
                                 <div className="relative">
                                     <input
@@ -165,7 +161,7 @@ const AddMenu = () => {
                             <div className="flex flex-col gap-4 lg:w-2/3">
                                 <div className="flex flex-col gap-2">
                                     <label htmlFor="products_name" className="font-semibold text-gray-700">
-                                        Product Name *
+                                        Product Name 
                                     </label>
                                     <input
                                         type="text"
@@ -182,17 +178,17 @@ const AddMenu = () => {
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     <div className="flex flex-col gap-2 flex-1">
                                         <label htmlFor="price" className="font-semibold text-gray-700">
-                                            Price *
+                                            Price 
                                         </label>
                                         <input
                                             type="number"
                                             name="price"
                                             id="price"
-                                            placeholder="0.00"
+                                            placeholder="0"
                                             value={formData.price}
                                             onChange={handleInputChange}
                                             min="0"
-                                            step="0.01"
+                                            step="500"
                                             className="border-2 border-gray-200 p-3 rounded-md focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
                                             required
                                         />
@@ -200,7 +196,7 @@ const AddMenu = () => {
 
                                     <div className="flex flex-col gap-2 flex-1">
                                         <label htmlFor="stock" className="font-semibold text-gray-700">
-                                            Stock *
+                                            Stock 
                                         </label>
                                         <input
                                             type="number"
@@ -218,7 +214,7 @@ const AddMenu = () => {
 
                                 <div className="flex flex-col gap-2">
                                     <label htmlFor="description" className="font-semibold text-gray-700">
-                                        Description *
+                                        Description 
                                     </label>
                                     <textarea
                                         name="description"
@@ -236,7 +232,7 @@ const AddMenu = () => {
 
                         <div className="flex flex-col gap-2">
                             <label htmlFor="product_type_id" className="font-semibold text-gray-700">
-                                Category *
+                                Category 
                             </label>
                             <select 
                                 name="product_type_id"
